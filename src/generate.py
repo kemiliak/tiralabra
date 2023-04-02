@@ -1,36 +1,58 @@
-import numpy as np
+import random
+from collections import defaultdict
+#import time
+import mido
+import music21 as m
 
-# Nuotit, joista sekvenssi tuotetaan
-chords = ["C", "D", "E", "F", "G", "A", "H"]
+# ei toimi tällä hetkellä
 
-# Tässä vaiheessa siirtymämatriisissa käytössä on satunnaiset todennäköisyydet, joita ei ole luotu opetusdatan avulla.
-# Matriisissa on siis todennäköisyydet siirtyä nuotista toiseen.
-transition_matrix = np.array([
-    [0.2, 0.2, 0.2, 0.1, 0.1, 0.1, 0.1],
-    [0.1, 0.2, 0.2, 0.2, 0.1, 0.1, 0.1],
-    [0.1, 0.1, 0.2, 0.2, 0.2, 0.1, 0.1],
-    [0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.1],
-    [0.1, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2],
-    [0.2, 0.1, 0.1, 0.1, 0.1, 0.2, 0.2],
-    [0.2, 0.2, 0.1, 0.1, 0.1, 0.1, 0.2]
-])
 
-# Valitaan aloitusnuotti
-current_chord = "C"
+# MIDI tiedostoissa tarvittava tieto on tallennettu "note_on" kohtaan
 
-# Halutun sekvenssin pituus
-chord_length = 20
+# ladataan MIDI tiedosto
+midi_file = mido.MidiFile('imperial.mid')
 
-# Nuottien määräytyminen:
-# Jokaisessa iteraatiossa käytetään nykyistä nuottia etsimään vastaavaa riviä siirtymämatriisista 
-# ja valitaan satunnaisesti seuraavan nuotti kyseisen rivin todennäköisyyksien perusteella. 
-# Liitetään seuraava nuotti luetteloon ja päivitetään nykyinen nuotti seuraavaa iteraatiota varten.
-chord_progression = [current_chord]
-for i in range(chord_length-1):
-    current_index = chords.index(current_chord)
-    next_index = np.random.choice(len(chords), p=transition_matrix[current_index])
-    next_chord = chords[next_index]
-    chord_progression.append(next_chord)
-    current_chord = next_chord
+note_sequence = []
+transition_dict = defaultdict(list)
 
-print(chord_progression)
+for msg in midi_file.play():
+    #print(msg)
+    if msg.type == 'note_on':
+        note_sequence.append(msg.note)
+
+for i in range(len(note_sequence)-1):
+    transition_dict[note_sequence[i]].append(note_sequence[i+1])
+
+transition_trie = Trie()
+
+for note, transitions in transition_dict.items():
+    for transition in transitions:
+        transition_trie.insert(str(note) + ',' + str(transition))
+
+
+# generoidaan sekvenssi Markovin ketjua käyttäen
+def generate_sequence(transition_dict, start_note, length):
+    sequence = [start_note]
+    current_note = start_note
+    for i in range(length-1):
+        possible_transitions = transition_dict[current_note]
+        if not possible_transitions:
+            break
+        next_note = random.choice(possible_transitions)
+        sequence.append(next_note)
+        current_note = next_note
+    return sequence
+
+# valitaan aloittava nuotti ja tuotettava pituus
+start_note = random.choice(0,127)
+length = 100
+new_sequence = generate_sequence(transition_dict, start_note, length)
+
+# midiutil parempi? 
+stream1 = m.stream.Stream()
+for note in new_sequence:
+    new_note = m.note.Note()
+    new_note.pitch.midi = note
+    stream1.append(new_note)
+
+stream1.write('midi', fp='generated_music.mid')
