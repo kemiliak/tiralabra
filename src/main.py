@@ -1,53 +1,38 @@
-import random
-from collections import defaultdict
-import time
-import mido
-from midiutil import MIDIFile
-from generate import generate_sequence
-from trie import Trie, TrieNode
+from generate import generate_markov_model, generate_sequence_from_model
+from midi import create_midi_file
+import music21
 
-midi_file = mido.MidiFile('../imperial.mid')
+# Ohjelma ajetaan tästä, printtien avulla voidaan seurata onnistuiko uuden MIDI 
+# tiedoston luominen
 
-note_sequence = []
-transition_dict = defaultdict(list)
+def generate_sequence(filename, order, length=10000, num_notes=1, tempo=120):
+    print("Ladataan MIDI tiedosto...")
+    midi_data = music21.converter.parse(filename)
+    notes_to_parse = None
 
-for msg in midi_file.play():
-    if msg.type == 'note_on':
-        note_sequence.append(msg.note)
+    try:
+        s2 = music21.instrument.partitionByInstrument(midi_data)
+        notes_to_parse = s2.parts[0].recurse() 
+    except:
+        notes_to_parse = midi_data.flat.notes
 
-for i in range(len(note_sequence)-1):
-    transition_dict[note_sequence[i]].append(note_sequence[i+1])
+    print("Puretaan nuottien sekvenssit...")
+    note_sequence = []
+    for element in notes_to_parse:
+        if isinstance(element, music21.note.Note):
+            note_sequence.append(element.pitch.nameWithOctave)
+        elif isinstance(element, music21.chord.Chord):
+            note_sequence.append('.'.join(str(n) for n in element.normalOrder))
 
-transition_trie = Trie()
+    print("Luodaan malli Markovin ketjun avulla...")
+    model = generate_markov_model(note_sequence, order)
 
-for note, transitions in transition_dict.items():
-    for transition in transitions:
-        transition_trie.insert(str(note) + ',' + str(transition))
+    print("Generoidaan sekvenssi...")
+    sequence = generate_sequence_from_model(model, length, num_notes)
 
-start_note = 53
-length = 100
-new_sequence = generate_sequence(transition_dict, start_note, length)
+    print("Luodaan uusi MIDI tiedosto...")
+    create_midi_file(sequence, tempo, filename)
 
-# Luodaan miditiedosto luodulla sekvenssillä
-midi_file = MIDIFile(numTracks=1)
-track = 0
-midi_time = 0
-tempo = 120
-midi_file.addTrackName(track, midi_time, "Generated Music")
-midi_file.addTempo(track, midi_time, tempo)
+    print("Uuden MIDI tiedoston luominen onnistui!")
 
-for note in new_sequence:
-    pitch = note
-    duration = 1
-    volume = 100
-    midi_file.addNote(track, 0, pitch, midi_time, duration, volume)
-    midi_time += 1
-
-with open('generated_music.mid', 'wb') as file:
-    midi_file.writeFile(file)
-
-output = mido.open_output()
-midi_file = mido.MidiFile('generated_music.mid')
-for msg in midi_file.play():
-    output.send(msg)
-    time.sleep(msg.time)
+generate_sequence("../imperial.mid", order=3, length=10000, num_notes=3, tempo=100)
