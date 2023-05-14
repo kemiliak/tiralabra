@@ -1,6 +1,14 @@
 # tiralabra
 Tietorakenteet ja algoritmit harjoitustyö
 
+## Dokumentaatio ##
+
+* [Toteutusdoukumentti](https://github.com/kemiliak/tiralabra/blob/main/dokumentaatio/toteutusdokumentti.md)
+* [Testausdokumentti](https://github.com/kemiliak/tiralabra/blob/main/dokumentaatio/testausdokumentti.md)
+* [Käyttöohje](https://github.com/kemiliak/tiralabra/blob/main/dokumentaatio/kayttoohje.md)
+* [Määrittelydokumentti](https://github.com/kemiliak/tiralabra/blob/main/dokumentaatio/maarittelydokumentti.md)
+
+
 * [Viikkoraportti 1](https://github.com/kemiliak/tiralabra/blob/main/dokumentaatio/viikkoraportti1.md)
 * [Viikkoraportti 2](https://github.com/kemiliak/tiralabra/blob/main/dokumentaatio/viikkoraportti2.md)
 * [Viikkoraportti 3](https://github.com/kemiliak/tiralabra/blob/main/dokumentaatio/viikkoraportti3.md)
