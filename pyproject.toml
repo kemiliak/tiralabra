@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "tiralabra"
+version = "0.1.0"
+description = ""
+authors = ["Kaisa Korhonen"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+music21 = "^8.1.0"
+mido = "^1.2.10"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.3.1"
+memory-profiler = "^0.61.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

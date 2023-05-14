@@ -1,38 +1,24 @@
-from generate import generate_markov_model, generate_sequence_from_model
-from midi import create_midi_file
-import music21
+from midi import midi_file_to_notes, notes_to_midi_file
+from generate import MarkovChain
 
-# Ohjelma ajetaan tästä, printtien avulla voidaan seurata onnistuiko uuden MIDI 
-# tiedoston luominen
+# ohjelma ajetaan täältä
+def main():
+    input_file = 'clairdelune.mid'
+    output_file = 'output.mid'
 
-def generate_sequence(filename, order, length=10000, num_notes=1, tempo=120):
-    print("Ladataan MIDI tiedosto...")
-    midi_data = music21.converter.parse(filename)
-    notes_to_parse = None
-
-    try:
-        s2 = music21.instrument.partitionByInstrument(midi_data)
-        notes_to_parse = s2.parts[0].recurse() 
-    except:
-        notes_to_parse = midi_data.flat.notes
-
-    print("Puretaan nuottien sekvenssit...")
-    note_sequence = []
-    for element in notes_to_parse:
-        if isinstance(element, music21.note.Note):
-            note_sequence.append(element.pitch.nameWithOctave)
-        elif isinstance(element, music21.chord.Chord):
-            note_sequence.append('.'.join(str(n) for n in element.normalOrder))
+    notes, ticks_per_beat, tempo = midi_file_to_notes(input_file)
 
     print("Luodaan malli Markovin ketjun avulla...")
-    model = generate_markov_model(note_sequence, order)
+    markov_chain = MarkovChain(order=2)
+    markov_chain.train(notes)
 
     print("Generoidaan sekvenssi...")
-    sequence = generate_sequence_from_model(model, length, num_notes)
+    generated_notes = markov_chain.generate(length=100)
 
     print("Luodaan uusi MIDI tiedosto...")
-    create_midi_file(sequence, tempo, filename)
+    notes_to_midi_file(generated_notes, ticks_per_beat, tempo, output_file)
 
-    print("Uuden MIDI tiedoston luominen onnistui!")
+    print("Uuden MIDI tiedoston luominen onnistui!\nSe löytyy nimellä output.mid samasta kansiosta alkuperäisen MIDI tiedoston kanssa.")
 
-generate_sequence("../imperial.mid", order=3, length=10000, num_notes=3, tempo=100)
+if __name__ == '__main__':
+    main()

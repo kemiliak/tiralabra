@@ -1,58 +1,76 @@
-Työ on jaettu karkeasti neljään osaan: trie tietorakenteeseen, Markovin 
-ketjuun, MIDI tiedoston luomiseen sekä pääohjelmaan.
+## Ohjelman yleisrakenne ##
+
+Työ on jaettu karkeasti neljään osaan: trieen, Markovin ketjuun, 
+MIDI tiedoston luomiseen sekä pääohjelmaan.
 
 trie.py:
 
-Trie-luokka: Tämä luokka edustaa trie-tietorakennetta, joka tallentaa 
-todennäköisyydet siirtymisestä yhdestä nuotista toiseen. 
-Siinä on init() -metodi, joka ottaa order-argumentin, joka määrittää aiempien
-nuottien määrän, jotka otetaan huomioon todennäköisyyksien laskemisessa. 
-Siinä on myös add_sequence() -metodi, joka lisää nuottijonon 
-trie-tietorakenteeseen, ja generate_sequence() -metodi, joka generoi uuden 
-nuottijonon trie-tietorakenteessa tallennettujen todennäköisyyksien perusteella.
+Luokka TrieNode: määrittelee TrieNode-luokan, jota käytetään Markovin 
+ketjun siirtymämatriisin solmun esittämiseen. Jokaisella TrieNodella on 
+sanakirja lapsisolmuista ja laskuri siitä, kuinka monta kertaa se on käyty läpi.
 
-TrieNode-luokka: Luokka edustaa solmua triessa. Siinä on value-attribuutti, 
-joka tallentaa nuotin, joka liittyy solmuun ja children-attribuutti, 
-joka tallentaa luettelon lapsisolmuista. Siinä on myös get_child() -metodi, 
-joka palauttaa lapsisolmun, joka liittyy annettuun nuottiarvoon, ja 
-insert() -metodi, joka lisää uuden nuottijonon trie-tietorakenteeseen.
+generate.py
 
-generate.py:
+Luokka MarkovChain: määrittelee Markovin ketju-luokan, jota käytetään Markovin
+ketjun mallin esittämiseen. Siinä on "order" -parametri, joka määrittää 
+käytettävien edellisten nuottien määrän seuraavan nuotin ennustamiseksi. 
+start_states-lista, joka sisältää kaikki mahdolliset aloitustilat ketjulle 
+ja sanakirja, joka sisältää siirtymätodennäköisyydet tilojen välillä.
 
-generate_markov_model() -funktio: Funktio ottaa nuottijonon ja order-argumentin 
-ja palauttaa MarkovTrie-olion, joka edustaa nuottijonon Markov-mallia. Se 
-tekee tämän luomalla uuden MarkovTrie-olion, lisäämällä nuottijonon 
-trie-tietorakenteeseen käyttäen add_sequence() -metodia, ja palauttamalla trien.
+Metodi train(self, notes): Markovin ketju-luokan metodi, joka kouluttaa 
+Markovin ketjun mallia käyttämällä nuottilistaa. Se käy läpi nuotit ja päivittää siirtymämatriisia nykyisten ja edellisten nuottien perusteella.
 
-generate_sequence_from_model() -funktio: Funktio ottaa MarkovTrie-olion, joka
-edustaa Markov-mallia, length-argumentin, joka edustaa generoitavan uuden 
-nuottijonon pituutta, ja num_notes-argumentin, joka edustaa generoitavien 
-nuottien määrää kerralla. Se generoi uuden nuottijonon aloittamalla trien 
-juurisolmusta, valitsemalla satunnaisen lapsisolmun trie-tietorakenteessa 
-tallennettujen todennäköisyyksien perusteella, ja liittämällä seuraavat 
-num_notes nuottia uuteen nuottijonoon. Se päivittää sitten nykyisen solmun 
-ja nykyisen fragmentin vastaamaan uutta nuottijonoa, ja toistaa prosessin, 
-kunnes haluttu pituus saavutetaan.
+Metodi generate(self, length): Markovin ketju-luokan metodi, joka generoi 
+tietyn mittaisen nuottijonon käyttäen Markovin ketjun mallia. Se valitsee 
+satunnaisesti aloitustilan start_states-listasta ja generoi seuraavan nuotin 
+iteratiivisesti nykyisen tilan ja siirtymätodennäköisyyksien perusteella.
 
-midi.py:
+midi.py
 
-Funktio ottaa nuottien sekvenssin, tempon ja tiedostonimen ja luo uuden 
-MIDI-tiedoston annetun nuottisekvenssin perusteella. Se luo uuden 
-music21.stream.Stream-olion, asettaa tempon käyttäen 
-music21.tempo.MetronomeMark-oliota ja käy läpi nuottisekvenssin luodakseen 
-music21.note.Note- ja music21.chord.Chord-objekteja tarvittaessa. Sitten se 
-kirjoittaa streamin MIDI-tiedostoon annetulla tiedostonimellä.
+Funktio midi_file_to_notes(file_path): lukee MIDI-tiedoston ja palauttaa 
+nuottilistan. Se käyttää mido-kirjastoa MIDI-tiedoston lukemiseen ja muuntaa 
+jokaisen nuottiviestin tupleksi, joka sisältää nuotin tyypin 
+(note_on tai note_off), MIDI-nuotin numeron ja ajan tikkeinä.
 
-main.py:
+Funktio notes_to_midi_file(notes, ticks_per_beat, tempo, file_path): 
+kirjoittaa nuottilistan MIDI-tiedostoon. Se käyttää mido-kirjastoa uuden 
+MIDI-tiedoston luomiseen.
 
-generate_sequence() -funktio: Funktio ottaa vastaan tiedoston nimen, 
-order-parametrin, pituusparametrin uuden sekvenssin pituutta varten, 
-num_notes-parametrin, joka edustaa kerralla generoitavien nuottien määrää ja 
-tempo-parametrin, joka edustaa uuden sekvenssin tempoa. Se generoi uuden 
-nuottisekvenssin lukemalla MIDI-tiedoston annetulla tiedostonimellä käyttäen 
-music21.converter.parse() -funktiota ja erottamalla nuottisekvenssin 
-recurse() -metodilla. Sitten se generoi nuottisekvenssin Markov-mallin 
-note_ sequencesta käyttäen generate_markov_model() -funktiota ja generoi 
-uuden nuottisekvenssin mallin perusteella käyttäen 
-generate_sequence_from_model() -funktiota ja luomalla uuden MIDI-tiedoston 
-sekvenssistä create_midi_file() -funktiolla.
+
+## Analyysi koodista ##
+
+midi_file_to_notes: Tämä funktio käy läpi kaikki trakit ja 
+viestit MIDI-tiedostossa ja luo niistä listan nuotteja. Funktion 
+aikavaativuus on O(n), missä n on MIDI-tiedostossa olevien viestien 
+kokonaismäärä.
+
+MarkovChain.train: funktio kouluttaa Markovin ketjun käymällä läpi 
+kaikki nuotit ja päivittämällä siirtymämatriisia. Funktion aikavaativuus 
+on O(m * k), missä m on nuottien määrä ja k on Markovin ketjun aste.
+
+MarkovChain.generate: funktio generoi uuden nuottisekvenssin 
+siirtymämatriisin perusteella. Funktion aikavaativuus on O(l * k), 
+missä l on generoidun sekvenssin pituus ja k on Markovin ketjun aste.
+
+notes_to_midi_file: funktio luo MIDI-tiedoston listasta nuotteja. 
+Funktion aikavaativuus on O(n), missä n on syötteessä olevien nuottien määrä.
+
+Koodin kokonaisaikavaativuus riippuu Markovin ketjun asteesta ja 
+MIDI-tiedoston koosta. Olettaen, että Markovin ketjun aste on vakio, 
+koko ohjelman aikavaativuus voidaan ilmaista muodossa O(n + m + l), 
+missä n on MIDI-tiedoston koko, m on MIDI-tiedostossa olevien nuottien 
+määrä ja l on generoidun sekvenssin pituus.
+
+### Puutteet ja parannusehdotukset ###
+
+* Käyttöliittymää voisi kehittää ja lisätä esimerkiksi jonkinlaista grafiikkaa
+* Rakenne ei välttämättä ole paras mahdollinen, koska trie -tietorakenne tuotti
+paljon ongelmia, sitä voisi siis vielä parantaa.
+
+### Lähteet ###
+
+* [https://medium.com/@stevehiehn/how-to-generate-music-with-python-the-basics-62e8ea9b99a5](https://medium.com/@stevehiehn/how-to-generate-music-with-python-the-basics-62e8ea9b99a5)
+* [https://towardsdatascience.com/markov-chain-for-music-generation-932ea8a88305](https://towardsdatascience.com/markov-chain-for-music-generation-932ea8a88305)
+* [https://www.geeksforgeeks.org/trie-insert-and-search/](https://www.geeksforgeeks.org/trie-insert-and-search/)
+* [https://towardsdatascience.com/making-music-when-simple-probabilities-outperform-deep-learning-75f4ee1b8e69](https://towardsdatascience.com/making-music-when-simple-probabilities-outperform-deep-learning-75f4ee1b8e69)
+
