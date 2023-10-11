@@ -1,7 +1,6 @@
-from collections import defaultdict
-
-# TrieNode määrittelee jokaisen solmun rakenteen triessa 
 class TrieNode:
-    def __init__(self):
-        self.children = defaultdict(int)
+    # TrieNode luokka
+    def __init__(self, note_event=None):
+        self.note_event = note_event
+        self.children = {}
         self.count = 0
