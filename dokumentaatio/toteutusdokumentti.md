@@ -1,36 +1,35 @@
 ## Ohjelman yleisrakenne ##
 
-Työ on jaettu karkeasti neljään osaan: trieen, Markovin ketjuun, 
-MIDI tiedoston luomiseen sekä pääohjelmaan.
-
 trie.py:
 
-Luokka TrieNode: määrittelee TrieNode-luokan, jota käytetään Markovin 
-ketjun siirtymämatriisin solmun esittämiseen. Jokaisella TrieNodella on 
-sanakirja lapsisolmuista ja laskuri siitä, kuinka monta kertaa se on käyty läpi.
+Luokka TrieNode: alustaa trie solmun: 
+note_event = "avain", jolla haetaan esim. generate.py rivi 29: (msg,note)
+children = solmun lapset
+count = esiintyvyydet, joiden perusteella todennäköisyys lasketaan
 
-generate.py
+generate.py:
 
-Luokka MarkovChain: määrittelee Markovin ketju-luokan, jota käytetään Markovin
-ketjun mallin esittämiseen. Siinä on "order" -parametri, joka määrittää 
-käytettävien edellisten nuottien määrän seuraavan nuotin ennustamiseksi. 
-start_states-lista, joka sisältää kaikki mahdolliset aloitustilat ketjulle 
-ja sanakirja, joka sisältää siirtymätodennäköisyydet tilojen välillä.
+Luokka MarkovChain (voisi olla myös Trie class): 
+order = Markovin ketjun order, käytännössä määrittää kuinka monta edellistä 
+nuottia otetaan huomioon seuraavan määrittämisessä
+start_states = lista, joka sisältää kaikki mahdolliset aloitustilat
 
-Metodi train(self, notes): Markovin ketju-luokan metodi, joka kouluttaa 
-Markovin ketjun mallia käyttämällä nuottilistaa. Se käy läpi nuotit ja päivittää siirtymämatriisia nykyisten ja edellisten nuottien perusteella.
+insert(self, notes) funktio:
+Käy läpi trieä, jos nuottia ei löydy (esim. order=2) kahden edeltävän tilan jälkeen,
+lisätään se, mikäli siirtymä kuitenkin on jo olemassa kasvatetaan sen count-arvoa
 
-Metodi generate(self, length): Markovin ketju-luokan metodi, joka generoi 
-tietyn mittaisen nuottijonon käyttäen Markovin ketjun mallia. Se valitsee 
-satunnaisesti aloitustilan start_states-listasta ja generoi seuraavan nuotin 
-iteratiivisesti nykyisen tilan ja siirtymätodennäköisyyksien perusteella.
+generate(self, length) funktio:
+Valitaan satunnaisesti aloitustila start_states-listasta.
+Lasketaan total_count eli kaikki count-arvot yhteen, tämän jälkeen arvotaan luku 
+1 ja total_count välillä. Seuraava nuotti valitaan todennäköisyyksien mukaan, siten että
+suurempi count-arvo tarkoittaa suurempaa todennäköisyyttä olla seuraava nuotti.
 
-midi.py
+midi.py:
 
 Funktio midi_file_to_notes(file_path): lukee MIDI-tiedoston ja palauttaa 
 nuottilistan. Se käyttää mido-kirjastoa MIDI-tiedoston lukemiseen ja muuntaa 
 jokaisen nuottiviestin tupleksi, joka sisältää nuotin tyypin 
-(note_on tai note_off), MIDI-nuotin numeron ja ajan tikkeinä.
+(note_on tai note_off), MIDI-nuotin numeron ja ajan.
 
 Funktio notes_to_midi_file(notes, ticks_per_beat, tempo, file_path): 
 kirjoittaa nuottilistan MIDI-tiedostoon. Se käyttää mido-kirjastoa uuden 
@@ -44,12 +43,10 @@ viestit MIDI-tiedostossa ja luo niistä listan nuotteja. Funktion
 aikavaativuus on O(n), missä n on MIDI-tiedostossa olevien viestien 
 kokonaismäärä.
 
-MarkovChain.train: funktio kouluttaa Markovin ketjun käymällä läpi 
-kaikki nuotit ja päivittämällä siirtymämatriisia. Funktion aikavaativuus 
-on O(m * k), missä m on nuottien määrä ja k on Markovin ketjun aste.
+MarkovChain: 
+Sekä trien insert että search funktion aikavaativuus on O(n).
 
-MarkovChain.generate: funktio generoi uuden nuottisekvenssin 
-siirtymämatriisin perusteella. Funktion aikavaativuus on O(l * k), 
+generate: Funktion aikavaativuus on O(l * k), 
 missä l on generoidun sekvenssin pituus ja k on Markovin ketjun aste.
 
 notes_to_midi_file: funktio luo MIDI-tiedoston listasta nuotteja. 
@@ -64,8 +61,6 @@ määrä ja l on generoidun sekvenssin pituus.
 ### Puutteet ja parannusehdotukset ###
 
 * Käyttöliittymää voisi kehittää ja lisätä esimerkiksi jonkinlaista grafiikkaa
-* Rakenne ei välttämättä ole paras mahdollinen, koska trie -tietorakenne tuotti
-paljon ongelmia, sitä voisi siis vielä parantaa.
 
 ### Lähteet ###
 
