@@ -2,11 +2,11 @@ from midi import midi_file_to_notes, notes_to_midi_file
 from generate import MarkovChain
 
 def main():
-    input_file = 'imperial.mid'
+    input_file = 'clairdelune.mid'
     output_file = 'output.mid'
 
     notes, ticks_per_beat,tempo = midi_file_to_notes(input_file)
-    markov_chain = MarkovChain(order=4)
+    markov_chain = MarkovChain(order=2)
     markov_chain.insert(notes)
 
     print("Generoidaan sekvenssi...")

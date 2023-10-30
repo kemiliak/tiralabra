@@ -2,7 +2,7 @@
 
 trie.py:
 
-Luokka TrieNode: alustaa trie solmun: 
+Luokka TrieNode: alustaa trie solmun. 
 note_event = "avain", jolla haetaan esim. generate.py rivi 29: (msg,note)
 children = solmun lapset
 count = esiintyvyydet, joiden perusteella todennäköisyys lasketaan

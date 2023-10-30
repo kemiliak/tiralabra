@@ -66,26 +66,49 @@ class TestMarkovChain(unittest.TestCase):
                      ('note_off', 62, 200), ('note_on', 64, 200), ('note_off', 64, 300),
                      ('note_on', 67, 300), ('note_off', 67, 400)]
 
-        
         new_markov_chain.insert(new_notes)
         generated_notes = new_markov_chain.generate(length=5)
         self.assertEqual(len(generated_notes), 5)
 
     def test_insert_order_2(self):
         new_markov_chain = MarkovChain(order=2)
-        new_notes = [('note_on', 60, 0), ('note_off', 60, 100), ('note_on', 62, 100),
-                     ('note_off', 62, 200), ('note_on', 64, 200), ('note_off', 64, 300),
-                     ('note_on', 67, 300), ('note_off', 67, 400)]
-
-        new_markov_chain.insert(new_notes)
+        input_file = 'clairdelune.mid'
+        notes, ticks_per_beat,tempo = midi_file_to_notes(input_file)
+        
+        new_markov_chain.insert(notes)
         generated_notes = new_markov_chain.generate(length=5)
 
-        for note in generated_notes:
-            print(note)
-            _, time = note
-            self.assertTrue(time >= 0) 
-
         self.assertEqual(len(generated_notes), 5)
+
+
+   # tarkista että generaatio on mahdollinen eri asteilla -> alkaen 1 
+    def test_generate(self):
+        input_file = 'clairdelune.mid'
+        notes, ticks_per_beat,tempo = midi_file_to_notes(input_file)
+        teaching_data = []
+        for note in notes:
+            teaching_data.append(note[:-1])
+
+        def convert_to_tuples(input_list, order):
+            tuples = []
+            for i in range(len(input_list) - order + 1):
+                tuple_data = tuple(input_list[i:i+order])
+                tuples.append(tuple_data)
+            return tuples
+        
+        for order in range(1,4):
+            markov_chain = MarkovChain(order)
+            markov_chain.insert(notes)
+            generated_notes = markov_chain.generate(length=200)
+
+            generated_tuples = convert_to_tuples(generated_notes, order)
+            print("hep")
+            print(generated_tuples)
+            teaching_tuples = convert_to_tuples(teaching_data, order)
+
+            common_tuples = set(generated_tuples).issubset(teaching_tuples)
+          
+            self.assertTrue((common_tuples))
 
 if __name__ == '__main__':
     unittest.main()
