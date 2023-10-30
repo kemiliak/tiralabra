@@ -1,8 +1,12 @@
 import mido
 import random
 
-# funktio käy läpi kaikki trakit ja viestit MIDI-tiedostossa ja luo niistä listan nuotteja
 def midi_file_to_notes(file_path):
+    """ Funktio käy läpi kaikki trakit ja viestit MIDI-tiedostossa ja luo niistä listan nuotteja
+        Parametri
+        file_path : opetusdatana käytettävän tiedoston nimi, polkua ei tarvita sillä tidosto löytyy samasta hakemistosta 
+    """
+
     mid = mido.MidiFile(file_path)
 
     notes = []
@@ -28,8 +32,16 @@ def midi_file_to_notes(file_path):
     
     return notes, ticks_per_beat, tempo
 
-# funktio luo MIDI-tiedoston
+
 def notes_to_midi_file(notes, ticks_per_beat, tempo, file_path):
+    """ Funktio luo MIDI-tiedoston
+        Parametrit
+        notes : generoidut nuotit
+        ticks_per_beat : tikkejä tahdissa, vaikuttaa sointiin
+        tempo : generoidun musiikin tempo
+        file_path : tallennettavan tiedoston nimi, tallennetaan samaan hakemistoon, joten polkua ei tarvita
+    """
+
     mid = mido.MidiFile()
     track = mido.MidiTrack()
     mid.tracks.append(track)

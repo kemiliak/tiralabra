@@ -2,6 +2,8 @@ from midi import midi_file_to_notes, notes_to_midi_file
 from generate import MarkovChain
 
 def main():
+    """ Pääohjelma """
+    
     input_file = 'clairdelune.mid'
     output_file = 'output.mid'
 

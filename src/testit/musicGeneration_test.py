@@ -4,7 +4,6 @@ from midi import notes_to_midi_file, midi_file_to_notes
 import mido
 import os
 
-
 class TestMarkovChain(unittest.TestCase):
     def setUp(self):
         self.notes = [('note_on', 60, 0), ('note_off', 60, 100), ('note_on', 62, 100),
