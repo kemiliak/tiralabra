@@ -1,14 +1,22 @@
 from midi import midi_file_to_notes, notes_to_midi_file
 from generate import MarkovChain
+import sys
 
 def main():
-    """ Pääohjelma """
-    
-    input_file = 'clairdelune.mid'
+    """ Pääohjelma, käyttäjä voi antaa tiedoston ja Markovin ketjun orderin argumentteina """
+
+    try:
+        input_file = sys.argv[2]
+        order = sys.argv[3]
+
+    except:
+        input_file = 'clairdelune.mid'
+        order = 2
+
     output_file = 'output.mid'
 
     notes, ticks_per_beat,tempo = midi_file_to_notes(input_file)
-    markov_chain = MarkovChain(order=2)
+    markov_chain = MarkovChain(order)
     markov_chain.insert(notes)
 
     print("Generoidaan sekvenssi...")
